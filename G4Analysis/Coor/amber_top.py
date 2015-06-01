@@ -87,7 +87,7 @@ def Read_top(filename):
         elif (i+1) > int(residue_pointer[-1])-1:
             atom_unit.residue_name=residue_label[-1]
             atom_unit.residue_serial=len(residue_pointer)
-        else:
+        else:  #this is for i equals the value of residue_pointer, we need to update temp_num
             if temp_num < len(residue_pointer)-1:
                 temp_num=temp_num+1
             else:

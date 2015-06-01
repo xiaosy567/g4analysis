@@ -1,5 +1,8 @@
 #-*- coding : utf-8 -*-
 '''
+
+Read various input file then store it in unit_atom
+
 Create on 2011-01-25
 @change: \n
     - 2011-01-25\n

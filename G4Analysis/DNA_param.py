@@ -164,6 +164,7 @@ def middle_frame(rotation_1,rotation_2,origin_1,origin_2):
     y1_vector=[rotation_1[i][1] for i in range(3)]
     y2_vector=[rotation_2[i][1] for i in range(3)]
 
+
     gamma=math.acos(numpy.dot(y1_vector,y2_vector)) 
     #  //calculate buckleopening angle.
     b0_vector=numpy.cross(y2_vector,y1_vector)
@@ -324,3 +325,19 @@ def Get_Dihedral(Atom_list, base_id):
     dihedral[chi_c   ] = chi_c
     return [alpha,beta,gamma,delta,epslon,zeta,chi,alpha_c,beta_c,gamma_c,delta_c,epslon_c,zeta_c,chi_c]
 
+
+def persistence_length_parameters(rotation_1,rotation_2,origin_1,origin_2):
+    '''
+    calculate L0, L, net bending angle, these parameters 
+    can be used to calculate the persistence length.
+    '''
+    z1_vector=numpy.array([rotation_1[i][2] for i in range(3)])
+    z2_vector=numpy.array([rotation_2[i][2] for i in range(3)])
+
+    theta_cos=numpy.dot(z1_vector,z2_vector.T)
+    theta=math.acos(numpy.dot(z1_vector,z2_vector.T))
+    R_vector=origin_2 - origin_1
+    L=math.sqrt(numpy.dot(R_vector,R_vector.T))
+    L0=0.0
+
+    return L0, L, theta_cos, theta
