@@ -140,6 +140,8 @@ def base_step_parameters(rotation_1,rotation_2,origin_1,origin_2):
     #//get kappa and sigma 
 
     displacement=numpy.matrix(origin_2 - origin_1)*MST_matirx 
+    # R=origin_2 - origin_1
+    # print math.sqrt(numpy.dot(R,R.T))
 
     shift=displacement[0,0] 
     slide=displacement[0,1] 

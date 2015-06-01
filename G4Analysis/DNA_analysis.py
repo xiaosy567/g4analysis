@@ -347,6 +347,7 @@ def Get_pls_fromTRJ(traj_file, coor_file, base_list_1, base_list_2, output_name,
         return -1
     if len(output_name)!=LIST_NUM:
         print "ERROR: The number of the output file not match the size of the base list."
+        sys.exit()
 
     Atom_list=Simple_atom.Get_atom_list(coor_file)
     residue_list=Simple_atom.Get_Residue_list(Atom_list)
@@ -356,8 +357,8 @@ def Get_pls_fromTRJ(traj_file, coor_file, base_list_1, base_list_2, output_name,
             chain.append([ii+1,reside])  
         else:
             pass
-    for ca in chain:
-        print "%4d\t (  %6d  %8s )" % (ca[0], ca[1][1],ca[1][0])
+    # for ca in chain:
+    #     print "%4d\t (  %6d  %8s )" % (ca[0], ca[1][1],ca[1][0])
 
     if (len(chain) % 2) == 0:
         pass
@@ -368,41 +369,67 @@ def Get_pls_fromTRJ(traj_file, coor_file, base_list_1, base_list_2, output_name,
 
     #####
     # construct the lists for bp of nucleic acids 
-    chain_bpList_1=list()
-    chain_bpList_2=list()
-    chain_bpAtomList_1=list()
-    chain_bpAtomList_2=list()
+    # chain_bpList_1=list()
+    # chain_bpList_2=list()
+    # chain_bpAtomList_1=list()
+    # chain_bpAtomList_2=list()
+    chain_bpList=list()
+    chain_bpAtomList=list()
     ##
     # chain_bpList_1 -> save the first bp of a neigbhor base pair step: 
     #    format: [ [[residue_name, residue_serial], [residue_name, residue_serial]], [[], []], ...]
     # chain_bpList_2 -> save the second bp of a neigbhor base pair step; 
     #    format: [ [[[residue_name, residue_serial], [residue_name, residue_serial]], [[], []], ... ]
+    # chain_bpList -> save the bp iformation in a list
+    #    format: [ [[[residue_name, residue_serial], [residue_name, residue_serial]], [[], []], ... ]
     ##
     num_nuc=len(chain)
-    for ii in range(num_nuc/2-1):
-        # if (ii >= 0) and (ii < num_nuc/2-1):
-        chain_bpList_1.append([ chain[ii][1], chain[num_nuc-ii-1][1] ])
-        chain_bpList_2.append([ chain[ii+1][1], chain[num_nuc-ii-2][1] ])
-        
-    if len(chain_bpList_1) == len(chain_bpList_2) == num_nuc/2-1:
-        chainLIST_NUM=len(chain_bpList_1)
-        pass
+    for ii in range(num_nuc/2):
+        chain_bpList.append([chain[ii][1], chain[num_nuc-ii-1][1]])
+
+    if len(chain_bpList) == num_nuc/2:
+        chainLIST_NUM=len(chain_bpList)
     else :
-        print "- number of base pairs in chain_bpList_1: %d" %(len(chain_bpList_1))
-        print "- number of base pairs in chain_bpList_2: %d" %(len(chain_bpList_2))
+        print "- number of base pairs in chain_bpList: %d" %(len(chain_bpList_1))
         print "- total base pairs in system: %d" %(num_nuc/2)
         sys.exit()
 
-    for ii, bp_1 in enumerate(chain_bpList_1):
-        print ii, bp_1, chain_bpList_2[ii]
+    # print the base pair LIST of DNA chain
+    # for ii, bp_1 in enumerate(chain_bpList):
+    #     print ii, bp_1
 
-    #build the atom list for each base pair
+    # for ii in range(num_nuc/2-1):
+    #     # if (ii >= 0) and (ii < num_nuc/2-1):
+    #     chain_bpList_1.append([ chain[ii][1], chain[num_nuc-ii-1][1] ])
+    #     chain_bpList_2.append([ chain[ii+1][1], chain[num_nuc-ii-2][1] ])
+        
+    # if len(chain_bpList_1) == len(chain_bpList_2) == num_nuc/2-1:
+    #     chainLIST_NUM=len(chain_bpList_1)
+    #     pass
+    # else :
+    #     print "- number of base pairs in chain_bpList_1: %d" %(len(chain_bpList_1))
+    #     print "- number of base pairs in chain_bpList_2: %d" %(len(chain_bpList_2))
+    #     print "- total base pairs in system: %d" %(num_nuc/2)
+    #     sys.exit()
+
+    # for ii, bp_1 in enumerate(chain_bpList_1):
+    #     print ii, bp_1, chain_bpList_2[ii]
+
+    
+    #build the atom list for each base pair in the LIST of chain_bpList\
     for i in range(chainLIST_NUM):
-        chain_bpAtomList_1.append([DNA_matrix.Get_baseID_list(Atom_list,j[1]) for j in chain_bpList_1[i]])
-        chain_bpAtomList_2.append([DNA_matrix.Get_baseID_list(Atom_list,j[1]) for j in chain_bpList_2[i]])
-    # print chain_bpAtomList_1[0]
-    # print chain_bpAtomList_2[0]
-    # sys.exit()
+        chain_bpAtomList.append([DNA_matrix.Get_baseID_list(Atom_list,j[1]) for j in chain_bpList[i]])
+    # print chain_bpList[0]
+    # print chain_bpAtomList[0]
+    # print chain_bpList[1]
+    # print chain_bpAtomList[1]
+    # #build the atom list for each base pair
+    # for i in range(chainLIST_NUM):
+    #     chain_bpAtomList_1.append([DNA_matrix.Get_baseID_list(Atom_list,j[1]) for j in chain_bpList_1[i]])
+    #     chain_bpAtomList_2.append([DNA_matrix.Get_baseID_list(Atom_list,j[1]) for j in chain_bpList_2[i]])
+    # # print chain_bpAtomList_1[0]
+    # # print chain_bpAtomList_2[0]
+    # # sys.exit()
 
     #####
     #build the list (base_list/base_atom_list) for the base list set in the parameter input file
@@ -458,8 +485,8 @@ def Get_pls_fromTRJ(traj_file, coor_file, base_list_1, base_list_2, output_name,
         base_name_list_2.append(temp_list)
 
 
-        base_atom_list_1.append([DNA_matrix.Get_baseID_list(Atom_list,j) for j in base_list_1[i]])
-        base_atom_list_2.append([DNA_matrix.Get_baseID_list(Atom_list,j) for j in base_list_2[i]])
+        # base_atom_list_1.append([DNA_matrix.Get_baseID_list(Atom_list,j) for j in base_list_1[i]])
+        # base_atom_list_2.append([DNA_matrix.Get_baseID_list(Atom_list,j) for j in base_list_2[i]])
         # print base_atom_list_1
     # print base_atom_list_1, base_atom_list_2
 
@@ -477,26 +504,58 @@ def Get_pls_fromTRJ(traj_file, coor_file, base_list_1, base_list_2, output_name,
 
         ##construct a list to save the R value to each step
         L_stepList=list()
-        R_middle_LIST_1=list()
-        R_middle_LIST_2=list()
-        O_middle_LIST_1=list()
-        O_middle_LIST_2=list()
+        # R_middle_LIST_1=list()
+        # R_middle_LIST_2=list()
+        # O_middle_LIST_1=list()
+        # O_middle_LIST_2=list()
+        R_middle_LIST=list()
+        O_middle_LIST=list()
 
         time=float((ts.frame-1)*dt)
-        print "time %8.1f" %time
         if dt > 0.0:
             if time >= float(begin):
                 continue
             if time > float(end) and end !=-1:
                 break
-        print "time %8.1f" %time
         if ts.frame % skip == 0 :
             print "frame %d" %ts.frame
+            print "time %8.1f" %time
 
             #
             #calculate the L value for each base step 
             for i in range(chainLIST_NUM):
-                print i+1,
+                # print i+1,
+                # r1=[]
+                # '''the group 1 rotate list'''
+                # r2=[]
+                # '''the group 2 rotate list'''
+                # c1=[]
+                # '''the group 1 coordinate list'''
+                # c2=[]
+                # '''the group 2 coordinate list'''
+                # for m in range(len(chain_bpList_1[i])):
+                #     temp_list = [ [ts._x[x-1], ts._y[x-1], ts._z[x-1]] for x in chain_bpAtomList_1[i][m] ]
+                #     result = DNA_matrix.Get_rotate_matrix(numpy.array(temp_list), chain_bpList_1[i][m][0])
+                #     #base_name_list_1[index of the groups][index of the base of group 1][base_name,base_serial]
+                #     r1.append(result[0])
+                #     c1.append(result[1])
+
+                # for m in range(len(chain_bpList_2[i])):
+                #     temp_list = [ [ts._x[x-1], ts._y[x-1], ts._z[x-1]] for x in chain_bpAtomList_2[i][m] ]
+                #     result = DNA_matrix.Get_rotate_matrix(numpy.array(temp_list), chain_bpList_2[i][m][0])
+                #     r2.append(result[0])
+                #     c2.append(result[1])
+
+                # middle_r1,middle_c1=DNA_param.middle_frame(r1[0],r1[1],c1[0],c1[1])
+                # middle_r2,middle_c2=DNA_param.middle_frame(r2[0],r2[1],c2[0],c2[1])
+
+                # R_middle_LIST_1.append(middle_r1)
+                # R_middle_LIST_2.append(middle_r2)
+                # O_middle_LIST_1.append(middle_c1)
+                # O_middle_LIST_2.append(middle_c2)
+
+                # a=DNA_param.persistence_length_parameters(middle_r1,middle_r2,middle_c1,middle_c2)
+                # L_stepList.append(a[1])
                 r1=[]
                 '''the group 1 rotate list'''
                 r2=[]
@@ -505,60 +564,51 @@ def Get_pls_fromTRJ(traj_file, coor_file, base_list_1, base_list_2, output_name,
                 '''the group 1 coordinate list'''
                 c2=[]
                 '''the group 2 coordinate list'''
-                for m in range(len(chain_bpList_1[i])):
-                    temp_list = [ [ts._x[x-1], ts._y[x-1], ts._z[x-1]] for x in chain_bpAtomList_1[i][m] ]
-                    result = DNA_matrix.Get_rotate_matrix(numpy.array(temp_list), chain_bpList_1[i][m][0])
+                for m in range(len(chain_bpList[i])):
+                    temp_list = [ [ts._x[x-1], ts._y[x-1], ts._z[x-1]] for x in chain_bpAtomList[i][m] ]
+                    result = DNA_matrix.Get_rotate_matrix(numpy.array(temp_list), chain_bpList[i][m][0])
                     #base_name_list_1[index of the groups][index of the base of group 1][base_name,base_serial]
                     r1.append(result[0])
                     c1.append(result[1])
 
-                for m in range(len(chain_bpList_2[i])):
-                    temp_list = [ [ts._x[x-1], ts._y[x-1], ts._z[x-1]] for x in chain_bpAtomList_2[i][m] ]
-                    result = DNA_matrix.Get_rotate_matrix(numpy.array(temp_list), chain_bpList_2[i][m][0])
-                    r2.append(result[0])
-                    c2.append(result[1])
-
-                middle_r1,middle_c1=DNA_param.middle_frame(r1[0],r1[1],c1[0],c1[1])
-                middle_r2,middle_c2=DNA_param.middle_frame(r2[0],r2[1],c2[0],c2[1])
-
-                R_middle_LIST_1.append(middle_r1)
-                R_middle_LIST_2.append(middle_r2)
-                O_middle_LIST_1.append(middle_c1)
-                O_middle_LIST_2.append(middle_c2)
-
-                a=DNA_param.persistence_length_parameters(middle_r1,middle_r2,middle_c1,middle_c2)
+                middle_r,middle_c=DNA_param.middle_frame(r1[0],r1[1],c1[0],c1[1])
+                # print middle_c
+                R_middle_LIST.append(middle_r)
+                O_middle_LIST.append(middle_c)
+            for i in range(chainLIST_NUM-1):
+                a=DNA_param.persistence_length_parameters(R_middle_LIST[i], R_middle_LIST[i+1], O_middle_LIST[i], O_middle_LIST[i+1])
                 L_stepList.append(a[1])
-            print
-            print len(R_middle_LIST_1)==len(R_middle_LIST_2)==len(O_middle_LIST_1)==len(O_middle_LIST_2)==chainLIST_NUM
-            print L_stepList
+            # print
+            # print len(R_middle_LIST)==len(O_middle_LIST)==chainLIST_NUM
+            # print L_stepList
 
             ####
             
             for i in range(LIST_NUM):
                 L0=0.0
                 fp = open(output_name[i], 'a')
-                print output_name[i]
+                # print output_name[i]
                 bp_INDEX0=0
                 bp_INDEX1=0
-                print base_name_list_1[0], base_name_list_2[0]
-                print chain_bpList_1[1], chain_bpList_2[1]
+                # print base_name_list_1[0], base_name_list_2[0]
+                # print chain_bpList[1], chain_bpList[2]
                 for x in range(chainLIST_NUM):
-                    if base_name_list_1[i] ==  chain_bpList_1[x]:
+                    if base_name_list_1[i] ==  chain_bpList[x]:
                         bp_INDEX0=x
                         continue
-                print bp_INDEX0
+                # print bp_INDEX0
                 for x in range(chainLIST_NUM):
-                    if base_name_list_2[i] == chain_bpList_2[x]:
+                    if base_name_list_2[i] == chain_bpList[x]:
                         bp_INDEX1=x
                         continue
-                print bp_INDEX1
-                print bp_INDEX0, bp_INDEX1
-                middle_r1, middle_c1 = R_middle_LIST_1[bp_INDEX0], O_middle_LIST_1[bp_INDEX0]
-                middle_r2,middle_c2 = R_middle_LIST_2[bp_INDEX1], O_middle_LIST_2[bp_INDEX1]
+                # print bp_INDEX1
+                # print bp_INDEX0, bp_INDEX1
+                middle_r1, middle_c1 = R_middle_LIST[bp_INDEX0], O_middle_LIST[bp_INDEX0]
+                middle_r2,middle_c2 = R_middle_LIST[bp_INDEX1], O_middle_LIST[bp_INDEX1]
 
                 a=DNA_param.persistence_length_parameters(middle_r1,middle_r2,middle_c1,middle_c2)
 
-                for x in xrange(bp_INDEX0,bp_INDEX1+1):
+                for x in xrange(bp_INDEX0,bp_INDEX1):
                     L0+=L_stepList[x]
 
                 fp.write("%8.2f    %8.2f    %8.2f    %8.2f \n" %(L0,a[1],a[2],a[3]))
@@ -611,5 +661,254 @@ def Get_pls_fromTRJ(traj_file, coor_file, base_list_1, base_list_2, output_name,
 
             #     fp.close()
 
-    print "The DNA helical analysis finished"
+    print "The DNA PERSISTENCE LENGTH RELATED PARAMETERS analysis finished"
     print "The result are in file: %s" %output_name
+
+
+
+def Get_pls_fromTOP( coor_file, base_list_1, base_list_2, output_name):
+    '''
+    get parameters from coor_file, for rigidity (perstence length) calculations
+    '''
+    START_TIME=Time.time()
+    if len(base_list_1)==len(base_list_2):
+        LIST_NUM=len(base_list_1)
+    else:
+        print "ERROR: The length of the base list not match."
+        return -1
+    if len(output_name)!=LIST_NUM:
+        print "ERROR: The number of the output file not match the size of the base list."
+
+    Atom_list=Simple_atom.Get_atom_list(coor_file)
+    residue_list=Simple_atom.Get_Residue_list(Atom_list)
+    chain=[]
+    for ii,reside in enumerate(residue_list):
+        if reside[0] in atomlib.RESIDUE_NAME_LIST:
+            chain.append([ii+1,reside])  
+        else:
+            pass
+    # for ca in chain:
+    #     print "%4d\t (  %6d  %8s )" % (ca[0], ca[1][1],ca[1][0])
+
+    if (len(chain) % 2) == 0:
+        pass
+    else:
+        print "-the base number of nucleic acid segment is not even, so..."
+        print "-please check it!"
+
+
+    #####
+    # construct the lists for bp of nucleic acids 
+    chain_bpList=list()
+    chain_bpAtomList=list()
+    ##
+    # chain_bpList -> save the bp iformation in a list
+    #    format: [ [[[residue_name, residue_serial], [residue_name, residue_serial]], [[], []], ... ]
+    ##
+    num_nuc=len(chain)
+    for ii in range(num_nuc/2):
+        chain_bpList.append([chain[ii][1], chain[num_nuc-ii-1][1]])
+
+    if len(chain_bpList) == num_nuc/2:
+        chainLIST_NUM=len(chain_bpList)
+    else :
+        print "- number of base pairs in chain_bpList: %d" %(len(chain_bpList_1))
+        print "- total base pairs in system: %d" %(num_nuc/2)
+        sys.exit()
+
+    # print the base pair list of DNA chain 
+    # for ii, bp_1 in enumerate(chain_bpList):
+    #     print ii, bp_1
+
+    #build the atom list for each base pair in the LIST of chain_bpList\
+    for i in range(chainLIST_NUM):
+        chain_bpAtomList.append([DNA_matrix.Get_baseID_list(Atom_list,j[1]) for j in chain_bpList[i]])
+
+
+    #########################################
+    L_stepList=list()
+    R_middle_LIST=list()
+    O_middle_LIST=list()
+    for i in range(chainLIST_NUM):
+        # print i+1,
+                # r1=[]
+                # '''the group 1 rotate list'''
+                # r2=[]
+                # '''the group 2 rotate list'''
+                # c1=[]
+                # '''the group 1 coordinate list'''
+                # c2=[]
+                # '''the group 2 coordinate list'''
+                # for m in range(len(chain_bpList_1[i])):
+                #     temp_list = [ [ts._x[x-1], ts._y[x-1], ts._z[x-1]] for x in chain_bpAtomList_1[i][m] ]
+                #     result = DNA_matrix.Get_rotate_matrix(numpy.array(temp_list), chain_bpList_1[i][m][0])
+                #     #base_name_list_1[index of the groups][index of the base of group 1][base_name,base_serial]
+                #     r1.append(result[0])
+                #     c1.append(result[1])
+
+                # for m in range(len(chain_bpList_2[i])):
+                #     temp_list = [ [ts._x[x-1], ts._y[x-1], ts._z[x-1]] for x in chain_bpAtomList_2[i][m] ]
+                #     result = DNA_matrix.Get_rotate_matrix(numpy.array(temp_list), chain_bpList_2[i][m][0])
+                #     r2.append(result[0])
+                #     c2.append(result[1])
+
+                # middle_r1,middle_c1=DNA_param.middle_frame(r1[0],r1[1],c1[0],c1[1])
+                # middle_r2,middle_c2=DNA_param.middle_frame(r2[0],r2[1],c2[0],c2[1])
+
+                # R_middle_LIST_1.append(middle_r1)
+                # R_middle_LIST_2.append(middle_r2)
+                # O_middle_LIST_1.append(middle_c1)
+                # O_middle_LIST_2.append(middle_c2)
+
+                # a=DNA_param.persistence_length_parameters(middle_r1,middle_r2,middle_c1,middle_c2)
+                # L_stepList.append(a[1])
+        r1=[]
+        '''the group 1 rotate list'''
+        r2=[]
+        '''the group 2 rotate list'''
+        c1=[]
+        '''the group 1 coordinate list'''
+        c2=[]
+        '''the group 2 coordinate list'''
+
+        for m in range(len(chain_bpList[i])):
+            # temp_list = [ [ts._x[x-1], ts._y[x-1], ts._z[x-1]] for x in chain_bpAtomList[i][m] ]
+            temp_list = [ [Atom_list[x-1].atom_coor_x*10, Atom_list[x-1].atom_coor_y*10,Atom_list[x-1].atom_coor_z*10] for x in chain_bpAtomList[i][m] ]
+            result = DNA_matrix.Get_rotate_matrix(numpy.array(temp_list), chain_bpList[i][m][0])
+            #base_name_list_1[index of the groups][index of the base of group 1][base_name,base_serial]
+            r1.append(result[0])
+            c1.append(result[1])
+
+        middle_r,middle_c=DNA_param.middle_frame(r1[0],r1[1],c1[0],c1[1])
+        R_middle_LIST.append(middle_r)
+        O_middle_LIST.append(middle_c)
+
+    for i in range(chainLIST_NUM-1):
+        a=DNA_param.persistence_length_parameters(R_middle_LIST[i], R_middle_LIST[i+1], O_middle_LIST[i], O_middle_LIST[i+1])
+        L_stepList.append(a[1])
+    # print
+    # print len(R_middle_LIST)==len(O_middle_LIST)==chainLIST_NUM
+    # print L_stepList
+
+    ##########################################
+    #construct list for base_list_1 and base_list_2
+    base_name_list_1=list()
+    base_name_list_2=list()
+    # base_atom_list_1=list()
+    # base_atom_list_2=list()
+    for i in range(LIST_NUM):
+
+        if os.path.isfile(output_name[i]):
+            print "backup %s to %s" %(output_name[i],"#"+output_name[i]+"#")
+            try:
+                os.rename(output_name[i],"#"+output_name[i]+"#")
+            except OSError,e: 
+                print e
+                print "the file %s will be overwrited!" %output_name[i]
+
+        fp = open(output_name[i], 'w')
+        fp.write("#Group 1: ")
+        for j in base_list_1[i]:
+            fp.write("%d\t " %j)
+        fp.write("\n")
+        fp.write("#Group 2: ")
+        for j in base_list_2[i]:
+            fp.write("%d\t " %j)
+        fp.write("\n")
+        fp.write("#skip: no skip, only for one frame coordinate (.gro or .pdb) \n" )
+        fp.write("#     L0        L        cos(theta)        theta\n")
+        fp.close()
+
+#        base_name_list_1.append( [residue_list[j-1] for j in base_list_1[i]])
+#        base_name_list_2.append( [residue_list[j-1] for j in base_list_2[i]])
+
+        temp_list=list()
+        for m in base_list_1[i]:
+            temp_list.append(residue_list[m-1])
+        base_name_list_1.append(temp_list)
+        # base_name_list_1.append(residue_list[m-1])
+
+        temp_list=list()
+        for m in base_list_2[i]:
+            temp_list.append(residue_list[m-1])
+        base_name_list_2.append(temp_list)
+
+    #calculate the PLs parameters for base_lists_1/base_list_2
+    print "----------------------------------------------------------"
+    for i in range(LIST_NUM):
+        L0=0.0
+        fp = open(output_name[i], 'a')
+        # print output_name[i]
+        bp_INDEX0=0
+        bp_INDEX1=0
+        # print base_name_list_1[0], base_name_list_2[0]
+        print i, ":",chain_bpList[1], chain_bpList[2]
+        for x in range(chainLIST_NUM):
+            if base_name_list_1[i] ==  chain_bpList[x]:
+                bp_INDEX0=x
+                continue
+        # print bp_INDEX0
+        for x in range(chainLIST_NUM):
+            if base_name_list_2[i] == chain_bpList[x]:
+                bp_INDEX1=x
+                continue
+        # print bp_INDEX1
+        # print bp_INDEX0, bp_INDEX1
+        middle_r1, middle_c1 = R_middle_LIST[bp_INDEX0], O_middle_LIST[bp_INDEX0]
+        middle_r2,middle_c2 = R_middle_LIST[bp_INDEX1], O_middle_LIST[bp_INDEX1]
+
+        a=DNA_param.persistence_length_parameters(middle_r1,middle_r2,middle_c1,middle_c2)
+
+        for x in xrange(bp_INDEX0,bp_INDEX1):
+            L0+=L_stepList[x]
+
+        fp.write("%8.2f    %8.2f    %8.2f    %8.2f \n" %(L0,a[1],a[2],a[3]))
+        fp.close()
+
+    print "----------------------------------------------------------"
+    NOW_TIME=Time.time()
+    usage.echo("analysis time used %8.2f s\n" %(NOW_TIME-START_TIME))
+
+
+
+#     base_atom_list_1=[DNA_matrix.Get_baseID_list(atom_list,j) for j in base_list_1]
+#     base_atom_list_2=[DNA_matrix.Get_baseID_list(atom_list,j) for j in base_list_2]
+
+#     r1=[]
+#     '''the group 1 rotate list'''
+#     r2=[]
+#     '''the group 2 rotate list'''
+#     c1=[]
+#     '''the group 1 coordinate list'''
+#     c2=[]
+#     '''the group 2 coordinate list'''
+#     for m in range(len(base_name_list_1)):
+#         temp_list = [ [atom_list[x-1].atom_coor_x*10, atom_list[x-1].atom_coor_y*10,atom_list[x-1].atom_coor_z*10] \
+#                 for x in base_atom_list_1[m] ]
+# #        print temp_list
+#         result = DNA_matrix.Get_rotate_matrix(numpy.array(temp_list), base_name_list_1[m][0])
+#         r1.append(result[0])
+#         c1.append(result[1])
+
+#     for m in range(len(base_name_list_2)):
+#         temp_list = [ [atom_list[x-1].atom_coor_x*10, atom_list[x-1].atom_coor_y*10,atom_list[x-1].atom_coor_z*10] \
+#                 for x in base_atom_list_2[m] ]
+# #        print temp_list
+#         result = DNA_matrix.Get_rotate_matrix(numpy.array(temp_list), base_name_list_2[m][0])
+#         r2.append(result[0])
+#         c2.append(result[1])
+
+#     if CALCU=="pair":
+#         a=DNA_param.base_pair_parameters(r1[0],r2[0],c1[0],c2[0])
+#         if PRINT:
+#             print "   shear     stretch     stagger      buckle   propeller     opening"
+#             print "%8.2f    %8.2f    %8.2f    %8.2f    %8.2f    %8.2f" %(a[0],a[1],a[2],a[3],a[4],a[5])
+#         return a
+#     else:
+#         middle_r1,middle_c1=DNA_param.middle_frame(r1[0],r1[1],c1[0],c1[1])
+#         middle_r2,middle_c2=DNA_param.middle_frame(r2[0],r2[1],c2[0],c2[1])
+#         a=DNA_param.base_step_parameters(middle_r1,middle_r2,middle_c1,middle_c2)
+#         if PRINT:
+#             print "   shift       slide        rise        tilt        roll       twist"
+#             print "%8.2f    %8.2f    %8.2f    %8.2f    %8.2f    %8.2f" %(a[0],a[1],a[2],a[3],a[4],a[5])
+#         return a

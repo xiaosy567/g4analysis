@@ -33,7 +33,7 @@ from G4Analysis.Coor import atomlib
 def Usage(coor_file="coor_file",traj_file="traj_file",output_file="output_file",\
         parm_file="para_analysis.in",skip=1,show_help="yes",\
         calcu_helical="False", calcu_dihedral="False",\
-        calcu_rise="False",calcu_twist="False",calcu_rmsd="False",calcu_area="False",begin=0,end=-1):
+        calcu_rise="False",calcu_twist="False",calcu_rmsd="False",calcu_area="False", calcu_pls="False", begin=0,end=-1):
     '''
     print the usage information.
     '''
@@ -54,6 +54,7 @@ def Usage(coor_file="coor_file",traj_file="traj_file",output_file="output_file",
     usage.Show("--rise","bool",calcu_rise,"Calculate the distance of DNA bases groups.")
     usage.Show("--twist","bool",calcu_twist,"Calculate the twist of DNA bases groups.")
     usage.Show("--rmsd","bool",calcu_rmsd,"Calculate the RMSD of DNA bases groups.")
+    usage.Show("--pls","bool",calcu_pls,"Calculate L, L0, bending angle (theta) for a segment of nucleic chain.")
     usage.Show("--area","bool",calcu_area,"Calculate the area of four O6 atoms of the G-quartet.")
     usage.Show("--begin","int",begin,"First frame (ps) to read from trajectory.")
     usage.Show("--end","int",end,"Last frame (ps) to read from trajectory.")
@@ -77,6 +78,7 @@ def Check_argv(argv):
     calcu_area = False
     calcu_helical=False
     calcu_dihedral=False
+    calcu_pls=False
 
     begin=1
     end=-1
@@ -86,7 +88,7 @@ def Check_argv(argv):
         sys.exit()
 
     try:
-        opts,args=getopt.getopt(sys.argv[1:],"p:f:o:i:h",["skip=","begin=","end=","rmsd","rise","twist","area","dihedral","helical"])
+        opts,args=getopt.getopt(sys.argv[1:],"p:f:o:i:h",["skip=","begin=","end=","rmsd","rise","twist","area","dihedral","helical", "pls"])
     except getopt.GetoptError,e:
         print e
         sys.exit()
@@ -125,6 +127,9 @@ def Check_argv(argv):
         elif a=="--helical":
             calcu_helical=True
 
+        elif a=="--pls":
+        	calcu_pls=True
+
         elif a=="-i":
             parm_file=b
 
@@ -159,12 +164,13 @@ def Check_argv(argv):
     resu_hash["calcu_area"] = calcu_area
     resu_hash["calcu_dihedral"]=calcu_dihedral
     resu_hash["calcu_helical"]=calcu_helical
+    resu_hash["calcu_pls"]=calcu_pls
     resu_hash["begin"]=begin
     resu_hash["end"]=end
 
     Usage(coor_file,traj_file,output_file,parm_file,skip,"no",\
             calcu_helical,calcu_dihedral,\
-            calcu_rise,calcu_twist,calcu_rmsd,calcu_area,begin,end)
+            calcu_rise,calcu_twist,calcu_rmsd,calcu_area, calcu_pls, begin, end)
 
     return resu_hash
 
@@ -361,7 +367,7 @@ if __name__=="__main__":
                 CALCU,skip=resu["skip"], dt=1,begin=resu["begin"],end=resu["end"])            
 
         else:
-            l1= Simple_atom.Get_residue(resu["coor_file"],True)
+            l1= Simple_atom.Get_residue(resu["coor_file"],True) 
             l2= Simple_atom.Get_residue(resu["coor_file"],False)
             list_group_1.append(l1)
             list_group_2.append(l2)
@@ -377,7 +383,75 @@ if __name__=="__main__":
                 DNA_analysis.Get_parm_fromTRJ(resu["traj_file"],resu["coor_file"],list_group_1,list_group_2,list_output,\
                     CALCU,skip=resu["skip"], dt=1,begin=resu["begin"],end=resu["end"])
 
-    
+# step 7: calculating the L, L0, bending angle (theta) for a segment of nucleic acid chain (related to persistence length calculations)
+    if resu["calcu_pls"]==True:
+        if have_parm_file:
+            fp=open(resu["parm_file"])
+            lines=fp.readlines()
+            for line in lines:
+                if len(line) < 3:
+                    continue 
+                [group1,group2,outputname]=line.split()
+                g1=group1.split(":")
+                g2=group2.split(":")
+                if len(g1) == len(g2) ==2:
+                    CALPL = "rigidity"
+                else:
+                	print "--------------------------------------------------------"
+                	print "please provide the para.in in format:"
+                	print "group_1(ID1:ID2:...) group_2(ID1:ID2:...) result.xvg"
+                	print "--------------------------------------------------------"
+                	sys.exit()
+                list_group_1.append([int(i) for i in g1])
+                list_group_2.append([int(i) for i in g2])
+                list_output.append(outputname)
+            
+            if resu["traj_file"]!="":
+                print "-calculate PLs related parameters for trajectory-"
+
+                DNA_analysis.Get_pls_fromTRJ(resu["traj_file"],resu["coor_file"],list_group_1,list_group_2,list_output,\
+                	skip=resu["skip"], dt=1,begin=resu["begin"],end=resu["end"])
+            else:
+            	print "-calculate PLs related parameters for coordinate file-"   
+                DNA_analysis.Get_pls_fromTOP(resu["coor_file"], list_group_1, list_group_2, list_output)         
+
+        else:
+            l1 = Simple_atom.Get_residue(resu["coor_file"], True)
+            l2 = Simple_atom.Get_residue(resu["coor_file"], False)
+            list_group_1.append(l1)
+            list_group_2.append(l2)
+            if len(l1) == len(l2) ==2:
+                CALPL = "rigidity"
+               #  list_output.append(resu["output_file"])
+               #  DNA_analysis.Get_pls_fromTRJ(resu["traj_file"],resu["coor_file"],list_group_1,list_group_2,list_output,\
+               # skip=resu["skip"], dt=1,begin=resu["begin"],end=resu["end"])            
+
+            else:
+               	print "--------------------------------------------------------"
+               	print "please provide the para.in in format:"
+               	print "group_1(ID1:ID2:...) group_2(ID1:ID2:...) result.xvg"
+               	print "--------------------------------------------------------"
+               	sys.exit()
+
+            if resu["traj_file"]!="":
+                print "-*calculate PLs related parameters for trajectory*-"
+                if resu["output_file"] == "":
+                	print "Error: -o should be specified."
+                	sys.exit()
+                list_output.append(resu["output_file"])     
+                DNA_analysis.Get_pls_fromTRJ(resu["traj_file"],resu["coor_file"],list_group_1,list_group_2,list_output,\
+                                                  skip=resu["skip"], dt=1,begin=resu["begin"],end=resu["end"])
+            else:
+            	print "-*calculate PLs related parameters for coordinate file*-"   
+                DNA_analysis.Get_pls_fromTOP(resu["coor_file"],list_group_1,list_group_2, list_output)    
+
+            #if resu["traj_file"]=="":
+            #    DNA_analysis.Get_para_fromTOP(resu["coor_file"], list_group_1[0],list_group_2[0],CALCU,PRINT=True)
+            #else:
+            #    list_output.append(resu["output_file"])
+            #    DNA_analysis.Get_parm_fromTRJ(resu["traj_file"],resu["coor_file"],list_group_1,list_group_2,list_output,\
+            #        CALCU,skip=resu["skip"], dt=1,begin=resu["begin"],end=resu["end"])
+
 
 # step 6, calculating the dihedral parameters.
     if resu["calcu_dihedral"]==True:

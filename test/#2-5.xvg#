@@ -1,0 +1,5 @@
+#Group 1: 2	 125	 
+#Group 2: 5	 122	 
+#skip: no skip, only for one frame coordinate (.gro or .pdb) 
+#     L0        L        cos(theta)        theta
+   11.32       10.80        1.00        0.09 
